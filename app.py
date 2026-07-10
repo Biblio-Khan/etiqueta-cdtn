@@ -43,6 +43,12 @@ def exportar_para_excel():
     ui.download(nome_arquivo) 
     ui.notify(f"Download iniciado: {nome_arquivo}")
 
+def baixar_etiquetas():
+    # 1. Gera o PDF e obtém o caminho
+    caminho_pdf = gerar_pdf_etiquetas(preparar_dados_para_pdf(biblioteca))
+    # 2. Dispara o download automático no navegador
+    ui.download(caminho_pdf)
+
 def renderizar_lista():
     # Verifica se a lista foi inicializada antes de tentar limpar
     if lista_estante is None:
@@ -53,17 +59,18 @@ def renderizar_lista():
         with ui.row().classes('w-full justify-between items-center mb-4'):
             ui.label("Livros na Estante").classes('text-h5 font-bold')
             with ui.row():
-                # Certifique-se de que exportar_para_excel e gerar_pdf_etiquetas existam
                 ui.button("Baixar Estante", on_click=exportar_para_excel, icon='download').classes('bg-blue-600')
+            
+                # --- BOTÃO CORRIGIDO ---
                 ui.button("Imprimir Etiquetas", 
-                            on_click=lambda: os.startfile(gerar_pdf_etiquetas(preparar_dados_para_pdf(biblioteca))), 
-                            icon='print').classes('bg-orange-500')
+                          on_click=baixar_etiquetas, 
+                          icon='print').classes('bg-orange-500')
+                # -----------------------
+            
                 with ui.dialog() as dialog, ui.card():
                     ui.label("Deseja apagar toda a estante? Esta ação não pode ser desfeita.")
                     with ui.row():
-                        # Botão que realmente apaga
                         ui.button("SIM, APAGAR", on_click=lambda: (biblioteca.clear(), salvar_dados(biblioteca), renderizar_lista(), dialog.close()), color='red')
-                        # Botão de segurança
                         ui.button("NÃO", on_click=dialog.close, color='grey')
 
                 # O botão que dispara a pergunta
