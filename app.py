@@ -44,9 +44,7 @@ def exportar_para_excel():
     ui.notify(f"Download iniciado: {nome_arquivo}")
 
 def baixar_etiquetas():
-    # 1. Gera o PDF e obtém o caminho
     caminho_pdf = gerar_pdf_etiquetas(preparar_dados_para_pdf(biblioteca))
-    # 2. Dispara o download automático no navegador
     ui.download(caminho_pdf)
 
 def renderizar_lista():
