@@ -219,6 +219,8 @@ def index():
     ui.colors(primary='#1E40AF', secondary='#F97316')
     
     # 1. Cabeçalho e Importação
+    with ui.header().classes('items-center'):
+    ui.image("https://github.com/Biblio-Khan/etiqueta-cdtn/blob/main/Logotipo-CDTN.png?raw=true").classes('w-20')
     with ui.column().classes('items-center w-full p-6'):
         ui.label("Sistema de Etiquetas: BIB CDTN").classes('text-h4 font-bold text-orange-600')
         ui.label("By BiblioKhan").classes('text-sm text-gray-500 italic')
