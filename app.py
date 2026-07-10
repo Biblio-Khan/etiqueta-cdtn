@@ -218,13 +218,17 @@ def gerar_pdf_etiquetas(books):
 def index():
     ui.colors(primary='#1E40AF', secondary='#F97316')
     
-    # 1. Cabeçalho e Importação
-    with ui.header().classes('items-center'):
-    ui.image("https://github.com/Biblio-Khan/etiqueta-cdtn/blob/main/Logotipo-CDTN.png?raw=true").classes('w-20')
-    with ui.column().classes('items-center w-full p-6'):
-        ui.label("Sistema de Etiquetas: BIB CDTN").classes('text-h4 font-bold text-orange-600')
-        ui.label("By BiblioKhan").classes('text-sm text-gray-500 italic')
-        ui.separator().classes('w-full my-4')
+   with ui.column().classes('items-center w-full p-6'):
+    # Criamos uma linha centralizada para alinhar a logo e o texto lado a lado
+    with ui.row().classes('items-center w-full justify-center'):
+        ui.image("https://github.com/Biblio-Khan/etiqueta-cdtn/blob/main/Logotipo-CDTN.png?raw=true").classes('w-20')
+        
+        # Coluna interna para o título e o subtítulo ficarem um sobre o outro
+        with ui.column():
+            ui.label("Sistema de Etiquetas: BIB CDTN").classes('text-h4 font-bold text-orange-600')
+            ui.label("By BiblioKhan").classes('text-sm text-gray-500 italic')
+            
+    ui.separator().classes('w-full my-4')
         
         ui.label("Importar via Planilha").classes('text-h6')
         ui.upload(label="Selecione o arquivo Excel/CSV", on_upload=processar_upload, auto_upload=True).props('accept=".xlsx, .csv"')
