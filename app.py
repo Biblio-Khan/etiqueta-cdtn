@@ -277,4 +277,12 @@ def index():
     renderizar_lista()
       
             
-ui.run(port=8081, reload=False, show=False)
+if __name__ in {"__main__", "__mp_main__"}:
+    ui.run(
+        port=8081, 
+        reload=False, 
+        show=False,
+        title="Etiqueta Biblioteca CDTN",
+        favicon='https://raw.githubusercontent.com/Biblio-Khan/etiqueta-cdtn/refs/heads/main/favicon.ico',
+        show_interactive_cover=False
+    )
