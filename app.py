@@ -219,14 +219,15 @@ def index():
     ui.colors(primary='#1E40AF', secondary='#F97316')
     
     with ui.column().classes('items-center w-full p-6'):
-        # Criamos uma linha centralizada para alinhar a logo e o texto lado a lado
-        with ui.row().classes('items-center w-full justify-center'):
-            ui.image("https://github.com/Biblio-Khan/etiqueta-cdtn/blob/main/Logotipo-CDTN.png?raw=true").classes('w-20')
-        
-        # Coluna interna para o título e o subtítulo ficarem um sobre o outro
-        with ui.column():
-            ui.label("Sistema de Etiquetas: BIB CDTN").classes('text-h4 font-bold text-orange-600')
-            ui.label("By BiblioKhan").classes('text-sm text-gray-500 italic')
+        # A linha (ui.row) vai conter a imagem E a coluna de texto lado a lado
+        with ui.row().classes('items-center justify-center'):
+            # Imagem com uma margem à direita (mr-4) para não grudar no texto
+            ui.image("https://github.com/Biblio-Khan/etiqueta-cdtn/blob/main/Logotipo-CDTN.png?raw=true").classes('w-20 mr-4')
+            
+            # Coluna com o título e subtítulo
+            with ui.column():
+                ui.label("Sistema de Etiquetas: BIB CDTN").classes('text-h4 font-bold text-orange-600')
+                ui.label("By BiblioKhan").classes('text-sm text-gray-500 italic')
             
         ui.separator().classes('w-full my-4')
         
@@ -283,6 +284,5 @@ if __name__ in {"__main__", "__mp_main__"}:
         reload=False, 
         show=False,
         title="Etiqueta Biblioteca CDTN",
-        favicon='https://raw.githubusercontent.com/Biblio-Khan/etiqueta-cdtn/refs/heads/main/favicon.ico',
-        show_interactive_cover=False
+        favicon='https://raw.githubusercontent.com/Biblio-Khan/etiqueta-cdtn/refs/heads/main/favicon.ico'
     )
