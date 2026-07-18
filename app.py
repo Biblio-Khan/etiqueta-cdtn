@@ -137,12 +137,18 @@ def preparar_dados_para_pdf(biblioteca):
 
 def gerar_barcode_memoria(numero_tombo):
     buffer = io.BytesIO()
-    # Code128 é o mais compatível com leitores
     CODE128 = barcode.get_barcode_class('code128')
-    # O add_checksum=False é opcional, mas ajuda com alguns leitores específicos
     codigo = CODE128(str(numero_tombo), writer=ImageWriter())
-    # write_text=True coloca o número embaixo do código
-    codigo.write(buffer, options={"write_text": True, "module_width": 0.2, "module_height": 7.0, "font_size": 8})
+    
+    # module_width=0.25 (deixa as barras um pouco mais largas e menos achatadas)
+    # font_size=5 (diminui o tamanho do número embaixo)
+    codigo.write(buffer, options={
+        "write_text": True, 
+        "module_width": 0.25, 
+        "module_height": 10.0, 
+        "font_size": 5,
+        "text_distance": 1.0
+    })
     buffer.seek(0)
     return buffer
 
