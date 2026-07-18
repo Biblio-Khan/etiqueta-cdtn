@@ -140,14 +140,11 @@ def gerar_barcode_memoria(numero_tombo):
     CODE128 = barcode.get_barcode_class('code128')
     codigo = CODE128(str(numero_tombo), writer=ImageWriter())
     
-    # module_width=0.25 (deixa as barras um pouco mais largas e menos achatadas)
-    # font_size=5 (diminui o tamanho do número embaixo)
+    # write_text=False remove o número que está saindo "atropelado"
     codigo.write(buffer, options={
-        "write_text": True, 
+        "write_text": False, 
         "module_width": 0.25, 
-        "module_height": 10.0, 
-        "font_size": 5,
-        "text_distance": 1.0
+        "module_height": 10.0
     })
     buffer.seek(0)
     return buffer
@@ -202,18 +199,17 @@ def gerar_pdf_etiquetas(books):
         c.drawString(CAPA_X, y_capa, str(book.get('autor', ''))[:25]); y_capa -= 3*mm
         c.drawString(CAPA_X, y_capa, str(book.get('titulo', ''))[:25]); y_capa -= 3*mm
         
-        # --- CÓDIGO DE BARRAS AQUI ---
-       # --- CÓDIGO DE BARRAS CENTRALIZADO ---
+        # --- CÓDIGO DE BARRAS (Centralizado na parte inferior da área da capa) ---
         tb = book.get('tombo', '')
         if tb:
             buffer_img = gerar_barcode_memoria(tb)
-            
-            # Ajuste de largura: aumentamos para 30mm e altura para 12mm
-            # O y_capa - 12*mm sobe a imagem um pouco mais para cima
-            c.drawImage(ImageReader(buffer_img), CAPA_X + 2*mm, y_capa - 12*mm, width=30*mm, height=12*mm)
-            
-            # Move o cursor para baixo para não escrever nada por cima da imagem
-            y_capa -= 13*mm
+            # Aumentamos o Y para subir o código de barras e não bater no rodapé
+            c.drawImage(ImageReader(buffer_img), CAPA_X + 5*mm, y + 6*mm, width=25*mm, height=10*mm)
+        
+        # --- Rodapé da Capa (Agora não terá conflito) ---
+        c.setFont("Helvetica-Bold", 5.5)
+        c.drawString(CAPA_X, y + 1*mm, "BIBLIOTECA CDTN")
+        c.drawRightString(x + 78*mm, y + 1*mm, "BiblioKhan")
         
         c.setFont("Helvetica-Bold", 5.5)
         c.drawString(CAPA_X, y + 1*mm, "BIBLIOTECA CDTN")
