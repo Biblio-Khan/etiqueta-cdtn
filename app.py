@@ -50,8 +50,37 @@ def baixar_etiquetas():
     caminho_pdf = gerar_pdf_etiquetas(preparar_dados_para_pdf(biblioteca))
     ui.download(caminho_pdf)
 
-# 1. Adicionamos 'termo_pesquisa=""' aqui na primeira linha
-def renderizar_lista(termo_pesquisa=""): 
+# --- 1. NOVA FUNÇÃO: Atualiza SÓ a lista de livros ---
+@ui.refreshable
+def renderizar_grid(termo_pesquisa=""):
+    # Lógica de filtragem
+    if termo_pesquisa == "":
+        livros_filtrados = biblioteca
+    else:
+        termo = termo_pesquisa.lower()
+        livros_filtrados = []
+        for livro in biblioteca:
+            titulo = str(livro.get('titulo', '')).lower()
+            autor = str(livro.get('autor', '')).lower()
+            tombo = str(livro.get('tombo', '')).lower()
+            
+            if termo in titulo or termo in autor or termo in tombo:
+                livros_filtrados.append(livro)
+
+    # Grid com os livros
+    with ui.grid(columns=2).classes('w-full gap-4'):
+        for livro in livros_filtrados:
+            with ui.row().classes('p-3 border rounded items-center justify-between bg-white shadow-sm'):
+                with ui.column():
+                    ui.label(f"{livro.get('titulo', 'Sem Título')}").classes('font-bold text-sm')
+                    ui.label(f"Autor: {livro.get('autor', 'Desconhecido')}").classes('text-xs text-gray-600')
+                
+                # ATENÇÃO AQUI: O botão de deletar agora chama renderizar_grid.refresh()
+                ui.button(icon='delete', on_click=lambda l=livro: (biblioteca.remove(l), salvar_dados(biblioteca), renderizar_grid.refresh()), color='red').props('flat dense')
+
+
+# --- 2. SUA FUNÇÃO ORIGINAL AJUSTADA: Desenha o cabeçalho e chama o grid ---
+def renderizar_lista(): 
     if lista_estante is None:
         return
         
@@ -60,18 +89,15 @@ def renderizar_lista(termo_pesquisa=""):
         with ui.row().classes('w-full justify-between items-center mb-4'):
             ui.label("Livros na Estante").classes('text-h5 font-bold')
             
-            # 2. ADICIONAMOS A BARRA DE PESQUISA AQUI, no meio
+            # O input agora só manda o @ui.refreshable recarregar o grid!
             ui.input(
                 'Pesquisar...', 
-                on_change=lambda e: renderizar_lista(e.value)
+                on_change=lambda e: renderizar_grid.refresh(e.value)
             ).props('clearable outlined dense').classes('w-64')
             
             with ui.row():
                 ui.button("Baixar Estante", on_click=exportar_para_excel, icon='download').classes('bg-blue-600')
-            
-                ui.button("Imprimir Etiquetas", 
-                          on_click=baixar_etiquetas, 
-                          icon='print').classes('bg-orange-500')
+                ui.button("Imprimir Etiquetas", on_click=baixar_etiquetas, icon='print').classes('bg-orange-500')
             
                 with ui.dialog() as dialog, ui.card():
                     ui.label("Deseja apagar toda a estante? Esta ação não pode ser desfeita.")
@@ -81,32 +107,8 @@ def renderizar_lista(termo_pesquisa=""):
 
                 ui.button("Apagar Tudo", icon='delete_sweep', color='red', on_click=dialog.open)
         
-        # --- LÓGICA DE FILTRAGEM (NOVO) ---
-        if termo_pesquisa == "":
-            livros_filtrados = biblioteca
-        else:
-            termo = termo_pesquisa.lower()
-            livros_filtrados = []
-            for livro in biblioteca:
-                titulo = str(livro.get('titulo', '')).lower()
-                autor = str(livro.get('autor', '')).lower()
-                tombo = str(livro.get('tombo', '')).lower()
-                
-                # Se o que foi digitado estiver no título, autor ou tombo, o livro aparece
-                if termo in titulo or termo in autor or termo in tombo:
-                    livros_filtrados.append(livro)
-
-        # Grid com os livros
-        with ui.grid(columns=2).classes('w-full gap-4'):
-            # Atenção: Mudamos de 'biblioteca' para 'livros_filtrados' aqui no for!
-            for livro in livros_filtrados:
-                with ui.row().classes('p-3 border rounded items-center justify-between bg-white shadow-sm'):
-                    with ui.column():
-                        ui.label(f"{livro.get('titulo', 'Sem Título')}").classes('font-bold text-sm')
-                        ui.label(f"Autor: {livro.get('autor', 'Desconhecido')}").classes('text-xs text-gray-600')
-                    
-                    # O botão de deletar continua funcionando perfeitamente
-                    ui.button(icon='delete', on_click=lambda l=livro: (biblioteca.remove(l), salvar_dados(biblioteca), renderizar_lista()), color='red').props('flat dense')
+        # Desenha os livros logo abaixo do cabeçalho
+        renderizar_grid()
 
 import io # Certifique-se de ter este import no topo do arquivo
 
