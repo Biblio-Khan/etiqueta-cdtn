@@ -6,6 +6,8 @@ import io  # <--- Importante
 from nicegui import ui
 from reportlab.lib.pagesizes import A4, mm
 from reportlab.pdfgen import canvas
+import barcode
+from barcode.writer import ImageWriter
 
 ARQUIVO_DADOS = "biblioteca.json"
 
