@@ -203,11 +203,17 @@ def gerar_pdf_etiquetas(books):
         c.drawString(CAPA_X, y_capa, str(book.get('titulo', ''))[:25]); y_capa -= 3*mm
         
         # --- CÓDIGO DE BARRAS AQUI ---
+       # --- CÓDIGO DE BARRAS CENTRALIZADO ---
         tb = book.get('tombo', '')
         if tb:
             buffer_img = gerar_barcode_memoria(tb)
-            c.drawImage(ImageReader(buffer_img), CAPA_X, y_capa - 10*mm, width=35*mm, height=8*mm)
-            y_capa -= 11*mm # Move para baixo para não escrever por cima
+            
+            # Ajuste de largura: aumentamos para 30mm e altura para 12mm
+            # O y_capa - 12*mm sobe a imagem um pouco mais para cima
+            c.drawImage(ImageReader(buffer_img), CAPA_X + 2*mm, y_capa - 12*mm, width=30*mm, height=12*mm)
+            
+            # Move o cursor para baixo para não escrever nada por cima da imagem
+            y_capa -= 13*mm
         
         c.setFont("Helvetica-Bold", 5.5)
         c.drawString(CAPA_X, y + 1*mm, "BIBLIOTECA CDTN")
