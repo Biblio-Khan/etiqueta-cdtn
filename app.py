@@ -169,7 +169,7 @@ def gerar_barcode_memoria(numero_tombo):
 
 # --- FUNÇÃO DE ETIQUETA ---
 def gerar_pdf_etiquetas(books):
-    arquivo_pdf = "etiquetas_final.pdf"
+    arquivo_pdf = "etiquetas.pdf"
     if os.path.exists(arquivo_pdf):
         try: os.remove(arquivo_pdf)
         except PermissionError: pass
