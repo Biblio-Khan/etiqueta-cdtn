@@ -102,23 +102,41 @@ async def processar_upload(event):
         conteudo = await event.file.read()
         
         # 2. Lê a planilha. O 'header=0' garante que a 1ª linha seja o nome das colunas
-        # No seu processar_upload, altere a linha de leitura para isto:
         df = pd.read_excel(io.BytesIO(conteudo), dtype={'cdu': str, 'tombo': str, 'exemplar': str})
 
-        # 3. CRUCIAL: Limpa espaços em branco nos nomes das colunas (evita erro por "Título " vs "Título")
-        # Adicione isso logo após ler a planilha (dentro do processar_upload)
-        df.columns = [c.lower() for c in df.columns]
+        # 3. Limpa espaços em branco nos nomes das colunas e deixa tudo minúsculo
+        # Usando .strip() para remover espaços acidentais como " titulo "
+        df.columns = [str(c).strip().lower() for c in df.columns]
         
-        # 4. Converte para dicionários, mas filtra linhas vazias
-        novos_dados = df.dropna(how='all').to_dict('records')
+        # 4. Remove linhas completamente vazias
+        df = df.dropna(how='all')
         
-        # 5. Adiciona e atualiza
+        # --- ORDENAÇÃO ALFABÉTICA ---
+        # Verifica se a coluna 'titulo' existe antes de ordenar
+        if 'titulo' in df.columns:
+            # Organiza pelo título. 
+            # astype(str).str.lower() garante que "A" e "a" sejam tratados iguais.
+            # na_position='last' joga livros sem título para o final da lista.
+            df = df.sort_values(
+                by='titulo', 
+                ascending=True, 
+                key=lambda col: col.astype(str).str.lower(),
+                na_position='last'
+            )
+        
+        # 5. Converte para dicionários
+        novos_dados = df.to_dict('records')
+        
+        # 6. Adiciona e atualiza
         global biblioteca
         biblioteca.extend(novos_dados)
         salvar_dados(biblioteca)
         renderizar_lista()
         
-        ui.notify(f"Sucesso! {len(novos_dados)} livros importados.", type='positive')
+        ui.notify(f"Sucesso! {len(novos_dados)} livros importados e organizados.", type='positive')
+        
+    except Exception as e:
+        ui.notify(f"Erro ao processar o arquivo: {str(e)}", type='negative')
         
         
         
