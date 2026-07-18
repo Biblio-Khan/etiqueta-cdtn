@@ -135,6 +135,17 @@ def preparar_dados_para_pdf(biblioteca):
         dados_formatados.append(item)
     return dados_formatados
 
+def gerar_barcode_memoria(numero_tombo):
+    buffer = io.BytesIO()
+    # Code128 é o mais compatível com leitores
+    CODE128 = barcode.get_barcode_class('code128')
+    # O add_checksum=False é opcional, mas ajuda com alguns leitores específicos
+    codigo = CODE128(str(numero_tombo), writer=ImageWriter())
+    # write_text=True coloca o número embaixo do código
+    codigo.write(buffer, options={"write_text": True, "module_width": 0.2, "module_height": 7.0, "font_size": 8})
+    buffer.seek(0)
+    return buffer
+
 # --- FUNÇÃO DE ETIQUETA ---
 def gerar_pdf_etiquetas(books):
     arquivo_pdf = "etiquetas_final.pdf"
@@ -148,14 +159,13 @@ def gerar_pdf_etiquetas(books):
     MARGEM_X, MARGEM_Y = 15 * mm, 270 * mm
     coluna, linha = 0, 0
     
-    # Função auxiliar para imprimir campos condicionais
     def imprimir_campo(canvas, x, y, prefixo, valor, fonte, tamanho):
         valor_limpo = str(valor or '').replace('.ed', '').replace('.ex', '').strip()
         if valor_limpo and valor_limpo.lower() not in ['none', 'nan', '']:
             canvas.setFont(fonte, tamanho)
             canvas.drawString(x, y, f"{prefixo}{valor_limpo}")
-            return True # Retorna True se imprimiu algo
-        return False # Retorna False se não imprimiu nada
+            return True
+        return False
 
     for book in books:
         x = MARGEM_X + (coluna * (LARGURA_ETQ + GAP_X))
@@ -163,49 +173,36 @@ def gerar_pdf_etiquetas(books):
         c.setLineWidth(0.2)
         c.rect(x, y, LARGURA_ETQ, ALTURA_ETQ)
         
-        # --- LADO ESQUERDO (COLUNA DA LOMBADA) ---
+        # --- LADO ESQUERDO ---
         y_lombada = y + 20*mm
-        
-        # CDU (Obrigatório)
         cdu_valor = str(book.get('cdu', ''))
         if len(cdu_valor) < 5 and '.' in cdu_valor: cdu_valor = cdu_valor.zfill(5)
         c.setFont("Helvetica-Bold", 7)
         c.drawString(x + 2*mm, y_lombada, cdu_valor); y_lombada -= 3*mm
-        
-        # Cutter (Obrigatório)
         c.setFont("Helvetica", 6)
         c.drawString(x + 2*mm, y_lombada, book.get('cutter', '')); y_lombada -= 3*mm
-        
-        # Edição e Exemplar (Opcionais - Empilhamento Automático)
         if imprimir_campo(c, x + 2*mm, y_lombada, "ed.", book.get('edicao'), "Helvetica", 6): y_lombada -= 3*mm
         if imprimir_campo(c, x + 2*mm, y_lombada, "ex.", book.get('exemplar'), "Helvetica", 6): y_lombada -= 3*mm
-        
-        # Rodapé da Lombada
         c.setFont("Helvetica-Bold", 6)
-        c.drawString(x + 2*mm, y + 4*mm, "BIB")
-        c.drawString(x + 2*mm, y + 1*mm, "CDTN")
+        c.drawString(x + 2*mm, y + 4*mm, "BIB"); c.drawString(x + 2*mm, y + 1*mm, "CDTN")
         
-        # --- LADO DIREITO (DADOS DA CAPA) ---
+        # --- LADO DIREITO ---
         DIV = 18 * mm 
         CAPA_X = x + DIV + 2*mm
         y_capa = y + 20*mm
-        
         c.setFont("Helvetica-Bold", 7)
         c.drawString(CAPA_X, y_capa, f"N.chamada: {str(book.get('cdu', ''))}"); y_capa -= 3*mm
-        
         c.setFont("Helvetica", 7)
         c.drawString(CAPA_X, y_capa, str(book.get('autor', ''))[:25]); y_capa -= 3*mm
         c.drawString(CAPA_X, y_capa, str(book.get('titulo', ''))[:25]); y_capa -= 3*mm
         
-        # Patrimônio e Tombo (Opcionais na linha de baixo)
-        pt = book.get('patrimonio', '')
+        # --- CÓDIGO DE BARRAS AQUI ---
         tb = book.get('tombo', '')
-        if pt or tb:
-            texto_pt = f"Pt: {pt} | " if pt else ""
-            texto_tb = f"Tombo: {tb}" if tb else ""
-            c.drawString(CAPA_X, y_capa, f"{texto_pt}{texto_tb}")
+        if tb:
+            buffer_img = gerar_barcode_memoria(tb)
+            c.drawImage(ImageReader(buffer_img), CAPA_X, y_capa - 10*mm, width=35*mm, height=8*mm)
+            y_capa -= 11*mm # Move para baixo para não escrever por cima
         
-        # Rodapé da Capa
         c.setFont("Helvetica-Bold", 5.5)
         c.drawString(CAPA_X, y + 1*mm, "BIBLIOTECA CDTN")
         c.drawRightString(x + 78*mm, y + 1*mm, "BiblioKhan")
