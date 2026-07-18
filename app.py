@@ -8,6 +8,7 @@ from reportlab.lib.pagesizes import A4, mm
 from reportlab.pdfgen import canvas
 import barcode
 from barcode.writer import ImageWriter
+from reportlab.lib.utils import ImageReader
 
 ARQUIVO_DADOS = "biblioteca.json"
 
