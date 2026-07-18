@@ -211,7 +211,7 @@ def gerar_pdf_etiquetas(books):
             buffer_img = gerar_barcode_memoria(tb)
             # Diminuímos a largura para 22mm e altura para 7mm para ficar mais discreto
             # O Y está fixo em y + 3*mm, logo acima do rodapé
-            c.drawImage(ImageReader(buffer_img), CAPA_X + 5*mm, y + 3*mm, width=22*mm, height=7*mm)
+            c.drawImage(ImageReader(buffer_img), CAPA_X, y + 4*mm, width=22*mm, height=7*mm)
         
         # --- Rodapé da Capa (Agora não terá conflito) ---
         c.setFont("Helvetica-Bold", 5.5)
