@@ -199,12 +199,16 @@ def gerar_pdf_etiquetas(books):
         c.drawString(CAPA_X, y_capa, str(book.get('autor', ''))[:25]); y_capa -= 3*mm
         c.drawString(CAPA_X, y_capa, str(book.get('titulo', ''))[:25]); y_capa -= 3*mm
         
-        # --- CÓDIGO DE BARRAS (Centralizado na parte inferior da área da capa) ---
+        # ADICIONE ESTA LINHA: Garante que, se o título for muito longo, ele pare antes do código de barras
+        y_capa = max(y_capa, y + 11*mm)
+        
+        # --- CÓDIGO DE BARRAS (Ajustado) ---
         tb = book.get('tombo', '')
         if tb:
             buffer_img = gerar_barcode_memoria(tb)
-            # Aumentamos o Y para subir o código de barras e não bater no rodapé
-            c.drawImage(ImageReader(buffer_img), CAPA_X + 5*mm, y + 6*mm, width=25*mm, height=10*mm)
+            # Diminuímos a largura para 22mm e altura para 7mm para ficar mais discreto
+            # O Y está fixo em y + 3*mm, logo acima do rodapé
+            c.drawImage(ImageReader(buffer_img), CAPA_X + 5*mm, y + 3*mm, width=22*mm, height=7*mm)
         
         # --- Rodapé da Capa (Agora não terá conflito) ---
         c.setFont("Helvetica-Bold", 5.5)
