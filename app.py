@@ -235,12 +235,24 @@ def gerar_pdf_etiquetas(books):
         DIV = 18 * mm 
         CAPA_X = x + DIV + 2*mm
         y_capa = y + 20*mm
+        # Textos do Livro
         c.setFont("Helvetica-Bold", 7)
         c.drawString(CAPA_X, y_capa, f"N.chamada: {str(book.get('cdu', ''))}"); y_capa -= 3*mm
-        c.setFont("Helvetica", 7)
-        c.drawString(CAPA_X, y_capa, str(book.get('autor', ''))[:25]); y_capa -= 3*mm
-        c.drawString(CAPA_X, y_capa, str(book.get('titulo', ''))[:25]); y_capa -= 3*mm
         
+        c.setFont("Helvetica", 7)
+        
+        # --- PREPARA O AUTOR ---
+        autor_str = str(book.get('autor', ''))
+        # Se for maior que 45 letras, corta no 42 e adiciona os 3 pontinhos
+        if len(autor_str) > 45:
+            autor_str = autor_str[:42] + "..."
+        c.drawString(CAPA_X, y_capa, autor_str); y_capa -= 3*mm
+        
+        # --- PREPARA O TÍTULO ---
+        titulo_str = str(book.get('titulo', ''))
+        if len(titulo_str) > 45:
+            titulo_str = titulo_str[:42] + "..."
+        c.drawString(CAPA_X, y_capa, titulo_str); y_capa -= 3*mm
         # ADICIONE ESTA LINHA: Garante que, se o título for muito longo, ele pare antes do código de barras
         y_capa = max(y_capa, y + 11*mm)
         
