@@ -241,11 +241,27 @@ def gerar_pdf_etiquetas(books):
         
         c.setFont("Helvetica", 7)
         
-        # --- PREPARA O AUTOR ---
-        autor_str = str(book.get('autor', ''))
-        # Se for maior que 45 letras, corta no 42 e adiciona os 3 pontinhos
+        # --- PREPARA O AUTOR (Múltiplos Autores) ---
+        autor_bruto = str(book.get('autor', ''))
+        
+        # O split(',') separa os nomes pela vírgula. 
+        # O strip() limpa espaços vazios caso a pessoa digite "Autor 1, Autor 2"
+        autores = [a.strip() for a in autor_bruto.split(',') if a.strip()]
+        
+        # Verifica a quantidade de autores para montar o texto final
+        if len(autores) == 1:
+            autor_str = autores[0]
+        elif len(autores) == 2:
+            autor_str = f"{autores[0]}, {autores[1]}"
+        elif len(autores) > 2:
+            autor_str = f"{autores[0]}, {autores[1]} et al."
+        else:
+            autor_str = ""
+            
+        # Mantemos a regra de segurança: se o nome combinado ficar gigante, corta no 45
         if len(autor_str) > 45:
             autor_str = autor_str[:42] + "..."
+            
         c.drawString(CAPA_X, y_capa, autor_str); y_capa -= 3*mm
         
         # --- PREPARA O TÍTULO ---
