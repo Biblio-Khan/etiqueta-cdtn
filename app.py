@@ -247,19 +247,17 @@ def gerar_pdf_etiquetas(books):
         # ADICIONE ESTA LINHA: Garante que, se o título for muito longo, ele pare antes do código de barras
         y_capa = max(y_capa, y + 11*mm)
         
-       # --- CÓDIGO DE BARRAS (Alinhado à esquerda) ---
+        # --- CÓDIGO DE BARRAS E NÚMERO DO TOMBO ---
         tb = book.get('tombo', '')
         if tb:
             buffer_img = gerar_barcode_memoria(tb)
             
-            # Subimos o código de barras meio milímetro (de 4 para 4.5) para dar espaço ao número
-            c.drawImage(ImageReader(buffer_img), CAPA_X, y + 4.5*mm, width=22*mm, height=7*mm)
+            # Subimos o código de barras para 5.5mm (estava em 4.5mm)
+            c.drawImage(ImageReader(buffer_img), CAPA_X, y + 5.5*mm, width=22*mm, height=7*mm)
             
-            # NOVO: Escreve o número do tombo bem pequeno logo abaixo do código
-            c.setFont("Helvetica", 5) # Fonte tamanho 5 (bem pequena e discreta)
-            # O "11*mm" centraliza o número no meio do código de barras (que tem 22mm de largura)
-            # O "2.5*mm" coloca ele exatamente entre o código de barras e o rodapé da biblioteca
-            c.drawCentredString(CAPA_X + 11*mm, y + 2.5*mm, str(tb))
+            # Subimos o número do tombo para 3.5mm (estava em 2.5mm)
+            c.setFont("Helvetica", 5) 
+            c.drawCentredString(CAPA_X + 11*mm, y + 3.5*mm, str(tb))
         
         # --- Rodapé da Capa (Agora não terá conflito) ---
         c.setFont("Helvetica-Bold", 5.5)
