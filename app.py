@@ -336,18 +336,15 @@ def index():
         ui.label("Cadastro Automático por IA (Foto da Capa ou Ficha)").classes('text-h6 text-blue-800')
         
         def processar_imagem_livro(e):
-            if not e.content:
-                ui.notify("Nenhuma imagem selecionada!", color="negative")
-                return
-
-            ui.notify("Analisando capa/ficha com Inteligência Artificial...", color="info")
+            ui.notify("Analisando capa/ficha com IA...", color="info")
             
             try:
                 import PIL.Image
                 import json
                 from google.genai import types
 
-                imagem = PIL.Image.open(e.content)
+                # Correção: Passa o 'e' diretamente para abrir a imagem
+                imagem = PIL.Image.open(e)
 
                 prompt = """
                 Analise esta imagem de um livro ou ficha catalográfica e extraia os dados:
@@ -358,7 +355,6 @@ def index():
                 Retorne estritamente em formato JSON com essas chaves exatas (titulo, autor, edicao, cutter).
                 """
 
-                # Usa o client global do Gemini configurado no topo do arquivo
                 response = client.models.generate_content(
                     model='gemini-2.5-flash',
                     contents=[imagem, prompt],
@@ -367,9 +363,12 @@ def index():
                     ),
                 )
 
+                if not response.text:
+                    ui.notify("A IA não retornou texto.", color="warning")
+                    return
+
                 dados = json.loads(response.text)
 
-                # Preenche automaticamente os inputs do formulário abaixo
                 titulo_in.value = dados.get("titulo", "")
                 autor_in.value = dados.get("autor", "")
                 edicao_in.value = dados.get("edicao", "")
@@ -378,7 +377,7 @@ def index():
                 ui.notify("Dados preenchidos pela IA com sucesso!", color="positive")
 
             except Exception as ex:
-                ui.notify(f"Erro ao processar imagem: {str(ex)}", color="negative")
+                ui.notify(f"Erro detalhado: {str(ex)}", color="negative", timeout=10000)
 
         # Componente de upload exclusivo para imagens
         ui.upload(label="Envie a foto da capa ou ficha", on_upload=processar_imagem_livro, auto_upload=True).props('accept=".jpg, .jpeg, .png, .webp"').classes('max-w-md mb-2')
