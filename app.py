@@ -18,64 +18,6 @@ ARQUIVO_DADOS = "biblioteca.json"
 
 client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
 
-@ui.page('/cadastro_ia')
-def pagina_cadastro_ia():
-    
-    # Função interna que processa a imagem
-    def processar_imagem_livro(e):
-        if not e.content:
-            ui.notify("Nenhuma imagem selecionada!", color="negative")
-            return
-
-        ui.notify("Analisando imagem com Inteligência Artificial...", color="info")
-        
-        try:
-            imagem = PIL.Image.open(e.content)
-
-            prompt = """
-            Analise esta imagem de um livro ou ficha catalográfica e extraia os dados:
-            - Título
-            - Autor
-            - Edicao
-            - Cutter
-            Retorne estritamente em formato JSON com essas chaves exatas (titulo, autor, edicao, cutter).
-            """
-
-            response = client.models.generate_content(
-                model='gemini-2.5-flash',
-                contents=[imagem, prompt],
-                config=types.GenerateContentConfig(
-                    response_mime_type="application/json",
-                ),
-            )
-
-            dados = json.loads(response.text)
-
-            input_titulo.value = dados.get("titulo", "")
-            input_autor.value = dados.get("autor", "")
-            input_edicao.value = dados.get("edicao", "")
-            input_cutter.value = dados.get("cutter", "")
-
-            ui.notify("Dados extraídos com sucesso!", color="positive")
-
-        except Exception as ex:
-            ui.notify(f"Erro ao processar imagem: {str(ex)}", color="negative")
-
-    # --- Construção da Interface da Página ---
-    ui.label("Cadastro Inteligente de Acervo").classes("text-2xl font-bold mb-4")
-    ui.label("Envie a foto da capa ou ficha catalográfica do livro:")
-
-    ui.upload(on_upload=processar_imagem_livro, auto_upload=True).classes('max-w-md mb-6')
-
-    ui.separator()
-
-    with ui.column().classes('w-full max-w-md gap-3'):
-        input_titulo = ui.input(label="Título").classes('w-full')
-        input_autor = ui.input(label="Autor(es)").classes('w-full')
-        input_edicao = ui.input(label="Edição").classes('w-full')
-        input_cutter = ui.input(label="Número Cutter").classes('w-full')
-        
-        ui.button("Salvar Livro no Acervo", on_click=lambda: ui.notify("Livro cadastrado!")).classes('bg-green-600 text-white mt-4')
 # --- FUNÇÕES DE DADOS ---
 def carregar_dados():
     if os.path.exists(ARQUIVO_DADOS):
@@ -384,13 +326,69 @@ def index():
             
         ui.separator().classes('w-full my-4')
         
+        # 1. Importação via Planilha (Mantida como estava)
         ui.label("Importar via Planilha").classes('text-h6')
         ui.upload(label="Selecione o arquivo Excel/CSV", on_upload=processar_upload, auto_upload=True).props('accept=".xlsx, .csv"')
+        
         ui.separator().classes('w-full my-4')
 
-    # 2. Formulário de Cadastro
-    # Guardamos os inputs em variáveis locais da função index
+        # --- NOVO: SEÇÃO DE CADASTRO INTELIGENTE POR IA ---
+        ui.label("✨ Preenchimento Automático por IA (Foto da Capa ou Ficha)").classes('text-h6 text-blue-800')
+        
+        def processar_imagem_livro(e):
+            if not e.content:
+                ui.notify("Nenhuma imagem selecionada!", color="negative")
+                return
+
+            ui.notify("Analisando capa/ficha com Inteligência Artificial...", color="info")
+            
+            try:
+                import PIL.Image
+                import json
+                from google.genai import types
+
+                imagem = PIL.Image.open(e.content)
+
+                prompt = """
+                Analise esta imagem de um livro ou ficha catalográfica e extraia os dados:
+                - Título
+                - Autor
+                - Edicao
+                - Cutter
+                Retorne estritamente em formato JSON com essas chaves exatas (titulo, autor, edicao, cutter).
+                """
+
+                # Usa o client global do Gemini configurado no topo do arquivo
+                response = client.models.generate_content(
+                    model='gemini-2.5-flash',
+                    contents=[imagem, prompt],
+                    config=types.GenerateContentConfig(
+                        response_mime_type="application/json",
+                    ),
+                )
+
+                dados = json.loads(response.text)
+
+                # Preenche automaticamente os inputs do formulário abaixo
+                titulo_in.value = dados.get("titulo", "")
+                autor_in.value = dados.get("autor", "")
+                edicao_in.value = dados.get("edicao", "")
+                cutter_in.value = dados.get("cutter", "")
+
+                ui.notify("Dados preenchidos pela IA com sucesso!", color="positive")
+
+            except Exception as ex:
+                ui.notify(f"Erro ao processar imagem: {str(ex)}", color="negative")
+
+        # Componente de upload exclusivo para imagens
+        ui.upload(label="Envie a foto da capa ou ficha", on_upload=processar_imagem_livro, auto_upload=True).props('accept=".jpg, .jpeg, .png, .webp"').classes('max-w-md mb-2')
+        # ------------------------------------------------
+
+        ui.separator().classes('w-full my-4')
+
+    # 2. Formulário de Cadastro (Os mesmos inputs que você já tinha)
     with ui.column().classes('w-full p-6'):
+        ui.label("Dados do Livro").classes('text-h6 mb-2')
         with ui.grid(columns=4).classes('w-full'):
             cdu_in = ui.input("CDU")
             cutter_in = ui.input("Cutter")
