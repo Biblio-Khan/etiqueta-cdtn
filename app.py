@@ -340,11 +340,13 @@ def index():
             
             try:
                 import PIL.Image
+                import io
                 import json
                 from google.genai import types
 
-                # Correção: Passa o 'e' diretamente para abrir a imagem
-                imagem = PIL.Image.open(e)
+                # Lê os bytes do arquivo de forma compatível com a versão atual do NiceGUI
+                file_bytes = e.file.read()
+                imagem = PIL.Image.open(io.BytesIO(file_bytes))
 
                 prompt = """
                 Analise esta imagem de um livro ou ficha catalográfica e extraia os dados:
