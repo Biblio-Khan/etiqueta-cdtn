@@ -333,7 +333,7 @@ def index():
         ui.separator().classes('w-full my-4')
 
         # --- NOVO: SEÇÃO DE CADASTRO INTELIGENTE POR IA ---
-        ui.label("✨ Preenchimento Automático por IA (Foto da Capa ou Ficha)").classes('text-h6 text-blue-800')
+        ui.label("Cadastro Automático por IA (Foto da Capa ou Ficha)").classes('text-h6 text-blue-800')
         
         def processar_imagem_livro(e):
             if not e.content:
