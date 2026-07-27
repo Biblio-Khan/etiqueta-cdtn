@@ -333,9 +333,10 @@ def index():
         ui.separator().classes('w-full my-4')
 
         # --- NOVO: SEÇÃO DE CADASTRO INTELIGENTE POR IA ---
-        ui.label("Cadastro Automático por IA (Foto da Capa ou Ficha)").classes('text-h6 text-blue-800')
+        ui.label("Cadastro Automático por IA").classes('text-h6 text-blue-800')
         
-        def processar_imagem_livro(e):
+        # 1. Adicionamos a palavra 'async' antes de def
+        async def processar_imagem_livro(e):
             ui.notify("Analisando capa/ficha com IA...", color="info")
             
             try:
@@ -344,8 +345,8 @@ def index():
                 import json
                 from google.genai import types
 
-                # Lê os bytes do arquivo de forma compatível com a versão atual do NiceGUI
-                file_bytes = e.file.read()
+                # 2. Lemos os bytes usando 'await' porque é uma corrotina assíncrona
+                file_bytes = await e.file.read()
                 imagem = PIL.Image.open(io.BytesIO(file_bytes))
 
                 prompt = """
@@ -357,6 +358,7 @@ def index():
                 Retorne estritamente em formato JSON com essas chaves exatas (titulo, autor, edicao, cutter).
                 """
 
+                # Chama o Gemini para analisar
                 response = client.models.generate_content(
                     model='gemini-2.5-flash',
                     contents=[imagem, prompt],
@@ -371,6 +373,7 @@ def index():
 
                 dados = json.loads(response.text)
 
+                # Preenche o formulário
                 titulo_in.value = dados.get("titulo", "")
                 autor_in.value = dados.get("autor", "")
                 edicao_in.value = dados.get("edicao", "")
