@@ -9,8 +9,12 @@ from reportlab.pdfgen import canvas
 import barcode
 from barcode.writer import ImageWriter
 from reportlab.lib.utils import ImageReader
+import os
+from google import genai
 
 ARQUIVO_DADOS = "biblioteca.json"
+
+client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
 
 # --- FUNÇÕES DE DADOS ---
 def carregar_dados():
