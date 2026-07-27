@@ -18,71 +18,64 @@ ARQUIVO_DADOS = "biblioteca.json"
 
 client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
 
-# 2. Função que processa a imagem enviada e preenche os campos
-def processar_imagem_livro(e):
-    if not e.content:
-        ui.notify("Nenhuma imagem selecionada!", color="negative")
-        return
-
-    ui.notify("Analisando imagem com Inteligência Artificial...", color="info")
+@ui.page('/cadastro_ia')
+def pagina_cadastro_ia():
     
-    try:
-        # Carrega a imagem enviada pelo NiceGUI
-        imagem = PIL.Image.open(e.content)
+    # Função interna que processa a imagem
+    def processar_imagem_livro(e):
+        if not e.content:
+            ui.notify("Nenhuma imagem selecionada!", color="negative")
+            return
 
-        prompt = """
-        Analise esta imagem de um livro ou ficha catalográfica e extraia os dados:
-        - Título
-        - Autor
-        - Edicao
-        - Cutter
-        - Ano
-        Retorne estritamente em formato JSON com essas chaves exatas (titulo, autor, edicao, cutter, ano).
-        """
+        ui.notify("Analisando imagem com Inteligência Artificial...", color="info")
+        
+        try:
+            imagem = PIL.Image.open(e.content)
 
-        response = client.models.generate_content(
-            model='gemini-2.5-flash',
-            contents=[imagem, prompt],
-            config=types.GenerateContentConfig(
-                response_mime_type="application/json",
-            ),
-        )
+            prompt = """
+            Analise esta imagem de um livro ou ficha catalográfica e extraia os dados:
+            - Título
+            - Autor
+            - Edicao
+            - Cutter
+            Retorne estritamente em formato JSON com essas chaves exatas (titulo, autor, edicao, cutter).
+            """
 
-        # Converte a resposta da IA (JSON) para dicionário Python
-        dados = json.loads(response.text)
+            response = client.models.generate_content(
+                model='gemini-2.5-flash',
+                contents=[imagem, prompt],
+                config=types.GenerateContentConfig(
+                    response_mime_type="application/json",
+                ),
+            )
 
-        # Preenche automaticamente os inputs da tela com os dados da IA
-        input_titulo.value = dados.get("titulo", "")
-        input_autor.value = dados.get("autor", "")
-        input_edicao.value = dados.get("edicao", "")
-        input_cutter.value = dados.get("cutter", "")
-        input_ano.value = dados.get("ano", "")
+            dados = json.loads(response.text)
 
-        ui.notify("Dados extraídos com sucesso!", color="positive")
+            input_titulo.value = dados.get("titulo", "")
+            input_autor.value = dados.get("autor", "")
+            input_edicao.value = dados.get("edicao", "")
+            input_cutter.value = dados.get("cutter", "")
 
-    except Exception as ex:
-        ui.notify(f"Erro ao processar imagem: {str(ex)}", color="negative")
+            ui.notify("Dados extraídos com sucesso!", color="positive")
 
-# --- 3. Construção da Interface com NiceGUI ---
-ui.label("Cadastro Inteligente de Acervo").classes("text-2xl font-bold mb-4")
+        except Exception as ex:
+            ui.notify(f"Erro ao processar imagem: {str(ex)}", color="negative")
 
-ui.label("Envie a foto da capa ou ficha catalográfica do livro:")
+    # --- Construção da Interface da Página ---
+    ui.label("Cadastro Inteligente de Acervo").classes("text-2xl font-bold mb-4")
+    ui.label("Envie a foto da capa ou ficha catalográfica do livro:")
 
-# Componente de Upload (quando a foto é enviada, dispara a IA automaticamente)
-ui.upload(on_upload=processar_imagem_livro, auto_upload=True).classes('max-w-md mb-6')
+    ui.upload(on_upload=processar_imagem_livro, auto_upload=True).classes('max-w-md mb-6')
 
-ui.separator()
+    ui.separator()
 
-# Formulário que será preenchido automaticamente
-with ui.column().classes('w-full max-w-md gap-3'):
-    input_titulo = ui.input(label="Título").classes('w-full')
-    input_autor = ui.input(label="Autor(es)").classes('w-full')
-    input_edicao = ui.input(label="Edição").classes('w-full')
-    input_cutter = ui.input(label="Número Cutter").classes('w-full')
-    input_ano = ui.input(label="Ano de Publicação").classes('w-full')
-    
-    ui.button("Salvar Livro no Acervo", on_click=lambda: ui.notify("Livro cadastrado com sucesso!")).classes('bg-green-600 text-white mt-4')
-
+    with ui.column().classes('w-full max-w-md gap-3'):
+        input_titulo = ui.input(label="Título").classes('w-full')
+        input_autor = ui.input(label="Autor(es)").classes('w-full')
+        input_edicao = ui.input(label="Edição").classes('w-full')
+        input_cutter = ui.input(label="Número Cutter").classes('w-full')
+        
+        ui.button("Salvar Livro no Acervo", on_click=lambda: ui.notify("Livro cadastrado!")).classes('bg-green-600 text-white mt-4')
 # --- FUNÇÕES DE DADOS ---
 def carregar_dados():
     if os.path.exists(ARQUIVO_DADOS):
